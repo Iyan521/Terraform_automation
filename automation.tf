@@ -69,7 +69,7 @@ resource "aws_instance" "Firsttaskin" {
    connection {
     type     = "ssh"
     user     = "ec2-user"
-    private_key = file("C:/Users/Priyanshu Sharma/Desktop/terra/final/First_task_key.pem")
+    private_key = tls_private_key.SSH_key.private_key_pem
     host     = aws_instance.Firsttaskin.public_ip
   }
 
@@ -222,7 +222,7 @@ depends_on = [
 connection {
         type    = "ssh"
         user    = "ec2-user"
-        private_key = file("C:/Users/Priyanshu Sharma/Desktop/terra/final/First_task_key.pem")
+        private_key = tls_private_key.SSH_key.private_key_pem
 	host     = aws_instance.Firsttaskin.public_ip
     }
 provisioner "remote-exec" {
@@ -248,7 +248,7 @@ depends_on = [
   connection {
     type     = "ssh"
     user     = "ec2-user"
-    private_key = file("C:/Users/Priyanshu Sharma/Desktop/terra/final/First_task_key.pem")
+    private_key = tls_private_key.SSH_key.private_key_pem
     host     = aws_instance.Firsttaskin.public_ip
   }
 
