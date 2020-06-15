@@ -102,10 +102,33 @@ resource "aws_volume_attachment" "ebs_att" {
   force_detach = true
 }
 
+//format,mount,download github code
 
-output "os_ip" {
-  value = aws_instance.Firsttaskin.public_ip
+resource "null_resource" "nullremote3"  {
+
+depends_on = [
+    aws_volume_attachment.ebs_att,
+  ]
+
+
+  connection {
+    type     = "ssh"
+    user     = "ec2-user"
+    private_key = tls_private_key.SSH_key.private_key_pem
+    host     = aws_instance.Firsttaskin.public_ip
+  }
+
+provisioner "remote-exec" {
+    inline = [
+      "sudo mkfs.ext4  /dev/xvdh",
+      "sudo mount  /dev/xvdh  /var/www/html",
+      "sudo rm -rf /var/www/html/*",
+      "sudo git clone https://github.com/Iyan521/Terraform_task1.git /var/www/html/",
+    ]
+  }
 }
+
+
 resource "aws_s3_bucket" "FirstTask_TerraformS3" {
   
   acl    = "public-read"
@@ -236,33 +259,11 @@ provisioner "remote-exec" {
 
 }
 
-//connect to instance and format,mount,download github code
-
-resource "null_resource" "nullremote3"  {
-
-depends_on = [
-    aws_volume_attachment.ebs_att,
-  ]
-
-
-  connection {
-    type     = "ssh"
-    user     = "ec2-user"
-    private_key = tls_private_key.SSH_key.private_key_pem
-    host     = aws_instance.Firsttaskin.public_ip
-  }
-
-provisioner "remote-exec" {
-    inline = [
-      "sudo mkfs.ext4  /dev/xvdh",
-      "sudo mount  /dev/xvdh  /var/www/html",
-      "sudo rm -rf /var/www/html/*",
-      "sudo git clone https://github.com/Iyan521/Terraform_task1.git /var/www/html/",
-    ]
-  }
+output "os_ip" {
+  value = aws_instance.Firsttaskin.public_ip
 }
 
-//launching chrome as soon as infrastructure is created
+//launching chrome when infrastructure is ready
 
 resource "null_resource" "nulllocal1"  {
 
