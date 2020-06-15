@@ -2,9 +2,22 @@ provider "aws"{
 region = "ap-south-1"
 profile = "First_Task"
 }
-resource "aws_key_pair" "key" {
-  key_name   = "First_task_key"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAiwollSg1Al6gddzeYVP2LfH4fT14k7exqXJXxu2I9y6UC4x7uCbQ6H+i0kv5Cnhd7zSMQjU98T8AHY9PHATaRQpl1d4txhlsEXDy+L9QJGxy0egRctlsENMiXny6H+dDhO62CeFLYnvkIzwBIIInW+S8GhIYQl3XhpIi3CKcRaO2yAjvQFs+Hj30/tb7rwrpNL2LOPLMEy6+YG6mdSYC60xjDzYt3/n2TWuZ5NSVlPB27vcbqJM59zkeR3vitE8h3KUyaDcCNVqFmPCF/lyIL0ABKa5Pdd4Y1dCzN6tCAqbpKCO2IaIMUvnwz3Ep6h/hYjzq6IsMbCMw3GlKDWvYCQ== rsa-key-20200612"
+//Creating key Pair
+
+resource "tls_private_key" "SSH_key" {    
+  algorithm = "RSA"
+}
+
+resource "local_file" "SSH_privatekey" {
+    content     = tls_private_key.SSH_key.private_key_pem
+    filename = "First_task_key.pem"
+    file_permission = 0400                             
+}
+
+
+resource "aws_key_pair" "SSH_key"{            
+	key_name= "First_task_key"
+	public_key = tls_private_key.SSH_key.public_key_openssh
 }
 //Creating Security Group 
 
