@@ -2,6 +2,7 @@ provider "aws"{
 region = "ap-south-1"
 profile = "First_Task"
 }
+
 //Creating key Pair
 
 resource "tls_private_key" "SSH_key" {    
@@ -10,56 +11,52 @@ resource "tls_private_key" "SSH_key" {
 
 resource "local_file" "SSH_privatekey" {
     content     = tls_private_key.SSH_key.private_key_pem
-    filename = "First_task_key.pem"
+    filename = "Terraform.pem"
     file_permission = 0400                             
 }
 
 
 resource "aws_key_pair" "SSH_key"{            
-	key_name= "First_task_key"
+	key_name= "Terraform"
 	public_key = tls_private_key.SSH_key.public_key_openssh
 }
+
 //Creating Security Group 
 
-resource "aws_security_group" "First_task_sg" {
-  name        = "First_task_sg"
-  description = "Allow SSH AND HTTP for webhosting"
+resource "aws_security_group" "Automation_sg" {
+	  name        = "Automation_sg"
+	  description = "Allow SSH AND HTTP for webhosting"
+	
+	  ingress {
+	    description = "Allow SSH"
+	    from_port   = 22
+	    to_port     = 22
+	    protocol    = "tcp"
+	    cidr_blocks = [ "0.0.0.0/0" ]
+	  }
+	
 
+	  ingress {
+	    description = "Allow HTTP"
+	    from_port   = 80
+	    to_port     = 80
+	    protocol    = "tcp"
+	    cidr_blocks = [ "0.0.0.0/0" ]
+	  }
+	
 
-  ingress {
-    description = "Allow SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
-  }
+	  egress {
+	    from_port   = 0
+	    to_port     = 0
+	    protocol    = "-1"
+	    cidr_blocks = ["0.0.0.0/0"]
+	  }
+	
 
-  ingress {
-    description = "Allow HTTP"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "First_task_sg"
-  }
+	  tags = {
+	    Name = "Terraform_sg"
+	  }
 }
-//Creating variable for key
-
-variable "key" {
-  type= string
-  default = "First_task_key"
-}
-
 
 //Creating Instance
 
@@ -67,7 +64,7 @@ variable "key" {
 resource "aws_instance" "Firsttaskin" {
   ami           = "ami-0447a12f28fddb066"
   instance_type = "t2.micro"
-  key_name      = var.key
+  key_name      = First_task_key
   security_groups = [ aws_security_group.First_task_sg.name ]
    
    connection {
@@ -110,6 +107,9 @@ resource "aws_volume_attachment" "ebs_att" {
 output "os_ip" {
   value = aws_instance.Firsttaskin.public_ip
 }
+
+// CREATING AN S3 BUCKET
+
 resource "aws_s3_bucket" "FirstTask_TerraformS3" {
   
   acl    = "public-read"
